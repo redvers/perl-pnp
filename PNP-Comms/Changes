@@ -1,0 +1,6 @@
+Revision history for Perl extension PNP::Comms.
+
+0.01  Tue Jul  8 21:36:45 2014
+	- original version; created by h2xs 1.23 with options
+		-AXn PNP::Comms
+
