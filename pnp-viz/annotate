@@ -1,0 +1,18 @@
+#!/usr/bin/perl
+
+use strict;
+use GD;
+use GD::Text::Align;
+
+my $imagefile = shift;
+
+my $gd = GD::Image->new($imagefile) or die;
+my ($w, $h) = $gd->getBounds();
+
+my $white = $gd->colorAllocate(255,255,255);
+$gd->rectangle(510,443,738,566,$white);
+
+open(GD, ">annotated.jpg") or die;
+binmode GD;
+print GD $gd->png;
+close GD;

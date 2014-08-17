@@ -1,0 +1,147 @@
+#!/usr/bin/perl
+
+use strict;
+use GD;
+use Data::Dumper;
+
+#my $scale = 1485;
+my $scale = 1445;
+my $xoffset = -902;# - (4 * 0.393701 * $scale);
+#my $xoffset = -460 - (4 * 0.393701 * $scale);
+my $yoffset = 1090;
+
+
+my $apds = {};
+my $apcur;
+my $xcur = 0;
+my $ycur = 0;
+
+my $gd = GD::Image->new("downfacing.jpg");
+my $white = $gd->colorClosest(255,255,255);
+$gd->colorDeallocate($white);
+$white = $gd->colorAllocate(255,0,0);
+
+
+while (my $line_in = <>) {
+	$line_in =~ s///g;
+	chomp($line_in);
+	if ($line_in =~ /^G04/) {
+		print("Comment\n");
+		next;
+	}
+
+	if ($line_in =~ /^G70/) {
+		print("Inches again\n");
+		next;
+	}
+
+	if ($line_in =~ /^G90/) {
+		print("Absolute positions\n");
+		next;
+	}
+
+	if ($line_in =~ /^G75/) {
+		print("multi-quadrant circular interpolation\n");
+		next;
+	}
+
+	if ($line_in =~ /^G01/) {
+		print("Linier interpolation positions\n");
+		next;
+	}
+
+
+	if ($line_in =~ /\%MOIN\*\%/) {
+		print("Inches\n");
+		next;
+	}
+
+	if ($line_in =~ /^\%ADD(\d+)R/) {
+		rectangle($line_in);
+		next;
+	}
+
+	if ($line_in =~ /^D(\d+)\*/) {
+		$apcur = $1;
+		print("SWITCH APERTURE $apcur\n");
+		next;
+	}
+
+	if ($line_in =~ /D(\d)\*$/) {
+		my $mode = $1;
+		if ($mode != 3) {
+			print("****SKIP****: $line_in\n");
+			next;
+		}
+
+		$line_in =~ s/D3.*$//;
+
+		if ($line_in =~ /X/) {
+			$line_in =~ /X(\d+)/;
+			$xcur = $1;
+		}
+	
+		if ($line_in =~ /Y/) {
+			$line_in =~ /Y(\d+)/;
+			$ycur = $1;
+		}
+
+		my $xcurdisp = $xcur / 10000;
+		my $ycurdisp = $ycur / 10000;
+
+		my $xlm = $apds->{'D'.$apcur}->[0][0] + $xcurdisp;
+		my $xrm = $apds->{'D'.$apcur}->[3][0] + $xcurdisp;
+
+		my $yum = $apds->{'D'.$apcur}->[2][1] + $ycurdisp;
+		my $ybm = $apds->{'D'.$apcur}->[1][1] + $ycurdisp;
+
+
+		$xlm *= $scale;
+		$xrm *= $scale;
+
+		$yum *= $scale;
+		$ybm *= $scale;
+
+		$xlm = int($xlm);
+		$xrm = int($xrm);
+
+		$yum = int($yum);
+		$ybm = int($ybm);
+		
+	
+		print("COORDS: $xlm, $yum, $xrm, $ybm => $white\n");
+		$gd->rectangle($xoffset + $xlm, $yoffset + 960 - $yum, $xoffset + $xrm, $yoffset + 960 - $ybm, $white);
+
+	}
+
+
+
+}
+
+#print(Dumper $apds);
+
+open(GD, ">adownfacing.jpg") or die;
+binmode GD;
+print GD $gd->jpeg;
+close GD;
+
+
+
+sub rectangle {
+	my $line_in = shift;
+	$line_in =~ /^\%ADD(\d+)R,(.*)\*\%/;
+	my $apnum = $1;
+	my $coords = $2;
+	my ($x, $y) = split(/X/, $coords);
+	print("Defining aperture D$apnum as $x -> $y\n");
+
+	$apds->{'D'.$apnum} = [
+		[ -1*($x / 2), -1* ($y / 2)], #	topleft
+		[  1*($x / 2), -1* ($y / 2)], #	topright
+		[ -1*($x / 2),  1* ($y / 2)], #	bottomleft
+		[  1*($x / 2),  1* ($y / 2)]  #	bottomright
+	];
+
+
+
+}
