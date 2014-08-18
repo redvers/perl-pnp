@@ -1,0 +1,6 @@
+#!/usr/bin/env perl
+
+use DBD::CSV;
+$d = DBI->connect("DBI:CSV:", undef, undef, { f_ext => '.csv/r' });
+$s = $d->prepare("create table feeders (components text, yaml text)");
+$s->execute;

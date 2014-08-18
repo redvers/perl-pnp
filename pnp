@@ -1,0 +1,36 @@
+#!/usr/bin/env perl
+
+##############################################################################
+#
+#	pnp	-	Run pnp jobs - huzzah!
+#
+#	Author	-	Redvers Davies
+#
+##############################################################################
+
+use strict;
+use PNP::Feeder;
+
+my $feeder;
+my $debug = 0;
+my $pretend = 0;
+
+while (my $flag = shift) {
+	if ($flag =~ /^-d$/) {
+		$debug++;
+		next;
+	}
+
+	if ($flag =~ /^-p$/) {
+		$pretend = 1;
+		next;
+	}
+
+	die("Bad flag $flag");
+}
+
+my $feeder = new PNP::Feeder;
+$feeder->debug($debug);
+$feeder->getList;
+
+

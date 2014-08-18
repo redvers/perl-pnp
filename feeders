@@ -1,0 +1,66 @@
+#!/usr/bin/env perl
+
+##############################################################################
+#
+#	feeders	-	Configure feeders on the machine.
+#
+#	Author	-	Redvers Davies
+#
+##############################################################################
+
+use strict;
+use PNP::Feeder;
+
+my $feeder;
+my $debug = 0;
+
+my $feeder = new PNP::Feeder;
+
+while (my $flag = shift) {
+	if ($flag =~ /^-d$/) {
+		$debug++;
+		$feeder->debug($feeder->debug + 1);
+		next;
+	}
+
+	if ($flag =~ /^-l$/) {	# List feeders
+		do_list();
+		exit;
+	}
+
+	if ($flag =~ /^-r$/) {	# Read feeder
+		do_read();
+		exit;
+	}
+
+	if ($flag =~ /^-f$/) {	# Configure feeder
+		$feeder = shift;
+		next;
+	}
+
+	die("Bad flag $flag");
+}
+
+
+
+
+sub do_list {
+	my $self = shift;
+	my $list = $feeder->getList;
+
+	foreach my $component (keys %$list) {
+		printf("%40s:  ", $component);
+
+		my $cfeed = new PNP::Feeder( component => $component );
+		$cfeed->load();
+		if ($cfeed->active == 0) {
+			print("not configured\n");
+			next;
+		}
+
+	}
+
+
+}
+
+
