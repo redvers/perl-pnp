@@ -5,12 +5,23 @@ use GD;
 use GD::Text::Align;
 
 my $imagefile = shift;
+my $x = 1280;
+my $y = 960;
 
 my $gd = GD::Image->new($imagefile) or die;
 my ($w, $h) = $gd->getBounds();
 
 my $white = $gd->colorAllocate(255,255,255);
-$gd->rectangle(510,443,738,566,$white);
+#$gd->rectangle(510,443,738,566,$white);
+my $xw = 738-510;
+my $yw = 566-443;
+
+$gd->rectangle(($x/2)-($xw/2), ($y/2)-($yw/2), ($x/2)+($xw/2), ($y/2)+($yw/2), $white);
+
+$gd->line($x/2, $y, $x/2, 0, $white);
+$gd->line($x, $y/2, 0, $y/2, $white);
+
+
 
 open(GD, ">annotated.jpg") or die;
 binmode GD;

@@ -1,0 +1,34 @@
+#!/usr/bin/perl
+
+use strict;
+use GD;
+use Data::Dumper;
+
+#my $x=1280;
+#my $y=960;
+
+my $x=1310;
+my $y=950;
+
+my $onemm = 118;
+
+
+
+
+my $gd = GD::Image->new("adownfacing.jpg");
+my $purple = $gd->colorClosest(255,0,255);
+$gd->colorDeallocate($purple);
+$purple = $gd->colorAllocate(255,0,255);
+
+$gd->line($x/2, $y, $x/2, 0, $purple);
+$gd->line($x, $y/2, 0, $y/2, $purple);
+
+foreach my $diam (0..10) {
+	$gd->arc($x / 2, $y / 2, $diam * $onemm, $diam * $onemm, 0, 360, $purple);
+}
+
+open(GD, ">down.jpg") or die;
+binmode GD;
+print GD $gd->jpeg;
+close GD;
+

@@ -4,11 +4,10 @@ use strict;
 use GD;
 use Data::Dumper;
 
-#my $scale = 1485;
-my $scale = 1445;
-my $xoffset = -902;# - (4 * 0.393701 * $scale);
-#my $xoffset = -460 - (4 * 0.393701 * $scale);
-my $yoffset = 1090;
+#my $scale = 1445;
+my $scale = 58; #metric
+my $xoffset = 1280/2 + 28;
+my $yoffset = -960/2 - 28;
 
 
 my $apds = {};
@@ -16,11 +15,15 @@ my $apcur;
 my $xcur = 0;
 my $ycur = 0;
 
+my $xmm = shift;
+my $ymm = shift;
+
 my $gd = GD::Image->new("downfacing.jpg");
 my $white = $gd->colorClosest(255,255,255);
 $gd->colorDeallocate($white);
 $white = $gd->colorAllocate(255,0,0);
 
+#$gd->rectangle($xoffset, $yoffset + 960, $xoffset + 100, $yoffset + 960 - 100, $white);
 
 while (my $line_in = <>) {
 	$line_in =~ s///g;
@@ -86,8 +89,11 @@ while (my $line_in = <>) {
 			$ycur = $1;
 		}
 
-		my $xcurdisp = $xcur / 10000;
-		my $ycurdisp = $ycur / 10000;
+		my $xcurdisp = $xcur / 1000;
+		my $ycurdisp = $ycur / 1000;
+
+		$xcurdisp -= $xmm;
+		$ycurdisp -= $ymm;
 
 		my $xlm = $apds->{'D'.$apcur}->[0][0] + $xcurdisp;
 		my $xrm = $apds->{'D'.$apcur}->[3][0] + $xcurdisp;
