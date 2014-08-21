@@ -7,8 +7,11 @@ use Data::Dumper;
 #my $x=1280;
 #my $y=960;
 
-my $x=1310;
-my $y=950;
+#my $x=1310;
+#my $y=950;
+
+my $x=320;
+my $y=240;
 
 my $onemm = 118;
 

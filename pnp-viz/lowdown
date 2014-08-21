@@ -1,0 +1,12 @@
+#!/bin/sh -x 
+uvccapture -odownfacing.jpg -v -d/dev/video1 -B128 -C40 -S40 -G1 
+mv downfacing.jpg adownfacing.jpg
+
+#cat TopMask.gbr | ./gerbertojpg 0 0
+./crosshair
+
+#fbi -T 2 -a down.jpg
+cp down.jpg /var/www/down.jpg
+#sleep 2
+#pkill fbi 
+

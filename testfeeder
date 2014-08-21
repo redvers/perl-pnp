@@ -3,19 +3,19 @@ use PNP::Feeder;
 
 my $feeder = new PNP::Feeder( refdes => 'C1' );
 
-$feeder->x0(0);
-$feeder->y0(0);
-$feeder->z0(0);
+$feeder->x0(124.4);
+$feeder->y0(5);
+$feeder->z0(10);
 $feeder->a0(0);
 
-$feeder->x1(36);
-$feeder->y1(4.9);
-$feeder->z1(0.1);
+$feeder->x1(439.6);
+$feeder->y1(4);
+$feeder->z1(10);
 $feeder->a1(0);
 
-$feeder->count(10);
+$feeder->count(80);
 
-foreach my $x (0..9) {
+foreach my $x (0..80) {
 	$feeder->pointer($x);
 	my ($x, $y, $z, $a) = $feeder->getCoord();
 

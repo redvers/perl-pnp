@@ -1,6 +1,6 @@
 package PNP::Feeder;
 
-use 5.020000;
+#use 5.020000;
 use strict;
 use warnings;
 
@@ -33,10 +33,10 @@ has 'dbh'	=> (is => 'ro', isa => 'Any', default => sub {
 
 sub getCoord {
 	my $self = shift;
-	my $x = ($self->pointer * (($self->x1 - $self->x0) / ($self->count - 1)));
-	my $y = ($self->pointer * (($self->y1 - $self->y0) / ($self->count - 1)));
-	my $z = ($self->pointer * (($self->z1 - $self->z0) / ($self->count - 1)));
-	my $a = ($self->pointer * (($self->a1 - $self->a0) / ($self->count - 1))); #carosel feeder? :-)
+	my $x = $self->x0 + ($self->pointer * (($self->x1 - $self->x0) / ($self->count - 1)));
+	my $y = $self->y0 + ($self->pointer * (($self->y1 - $self->y0) / ($self->count - 1)));
+	my $z = $self->z0 + ($self->pointer * (($self->z1 - $self->z0) / ($self->count - 1)));
+	my $a = $self->a0 + ($self->pointer * (($self->a1 - $self->a0) / ($self->count - 1))); #carosel feeder? :-)
 	return($x, $y, $z, $a);
 }
 
