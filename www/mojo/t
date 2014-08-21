@@ -1,0 +1,10 @@
+use QxServ::MojoApp;
+# and the Mojolicious application starter command
+use Mojolicious::Commands;
+ 
+# Mojo expects to find an instance of the application in the
+# MOJO_APP environment variable.
+$ENV{MOJO_APP} = QxServ::MojoApp->new;
+ 
+# finally launch
+Mojolicious::Commands->start_app(QxServ::MojoApp);
