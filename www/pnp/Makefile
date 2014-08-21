@@ -3,7 +3,7 @@ all: source
 source: .FORCE
 	./generate.py source
 
-build:
+build:	.FORCE
 	./generate.py build
 
 .FORCE:
