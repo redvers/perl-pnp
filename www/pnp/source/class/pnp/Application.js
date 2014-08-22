@@ -37,7 +37,8 @@ qx.Class.define("pnp.Application",
 
 	__statusBox	: null,
 
-
+	__tm1		: null,
+	__tm2		: null,
 
     /**
      * This method contains the initial application code and gets called 
@@ -66,60 +67,18 @@ qx.Class.define("pnp.Application",
 	
 		this.__cambox = new qx.ui.container.Composite(hbox0);
 	
-		this.__camup = new qx.ui.basic.Image("http://192.168.1.19:8090/?action=stream");
-		this.__camdown = new qx.ui.basic.Image("http://192.168.1.19:8091/?action=stream");
-		this.__camvanity = new qx.ui.basic.Image("http://192.168.1.19:8092/?action=stream");
+		this.__camup = new qx.ui.embed.Iframe("c1.html");
+		this.__camup.set({ scrollbar: "no", width: 320, height: 240});
+
+		this.__camdown = new qx.ui.embed.Iframe("c2.html");
+		this.__camdown.set({ scrollbar: "no", width: 320, height: 240});
+
+		this.__camvanity = new qx.ui.embed.Iframe("c3.html");
+		this.__camvanity.set({ scrollbar: "no", width: 320, height: 240});
 
 		this.__cambox.add(this.__camup);
 		this.__cambox.add(this.__camdown);
 		this.__cambox.add(this.__camvanity);
-
-/*
-		##	 		X	Y	Z	A
-
-		Nozzle Requested
-		Nozzle Coordinates
-
-		Camera Requested
-		Camera Coordinates
-
-		GCode Mode:		
-
-
-		var tm1 = new qx.ui.table.model.Simple();
-		tm1.setColumns(["","X", "Y", "Z", "A"]);
-		tm1.setData(	[
-				["", 0, 0, 68, 0],
-				["", 0, 0, 68, 0]
-				]);
-
-		var table = new qx.ui.table.Table(tm1);
-
-
-		var gridlayout = new qx.ui.layout.Grid();
-		var statusgrid = new qx.ui.container.Composite(gridlayout);
-
-		statusgrid.add(new qx.ui.basic.Label("X"), {row: 0, column: 1});
-		statusgrid.add(new qx.ui.basic.Label("Y"), {row: 0, column: 2});
-		statusgrid.add(new qx.ui.basic.Label("Z"), {row: 0, column: 3});
-		statusgrid.add(new qx.ui.basic.Label("A"), {row: 0, column: 4});
-
-		statusgrid.add(new qx.ui.basic.Label("Nozzle Requested:"), {row: 2, column: 0});
-		statusgrid.add(new qx.ui.basic.Label("Nozzle Coordinates:"), {row: 3, column: 0});
-
-		statusgrid.add(new qx.ui.basic.Label("Camera Requested:"), {row: 5, column: 0});
-		statusgrid.add(new qx.ui.basic.Label("Camera Coordinates:"), {row: 6, column: 0});
-
-		statusgrid.add(new qx.ui.basic.Label("GCode Mode:"), {row: 8, column: 0});
-
-
-
-
-
-
-		this.__cambox.add(table);
-
-*/
 
 
 	},
@@ -128,15 +87,14 @@ qx.Class.define("pnp.Application",
 		var vbox = new qx.ui.layout.VBox();
 		this.__statusBox = new qx.ui.container.Composite(vbox);
 
-		var tm1 = new qx.ui.table.model.Simple();
-		tm1.setColumns(["","X", "Y", "Z", "A"]);
-		tm1.setData([
-				["Nozzle Requested", 0, 0, 68, 0],
-				["Nozzle Actual", 0, 0, 68, 0]
-		]);
+//		this.__tm1 = new pnp.RemoteDataModel();
+//		this.__tm1.setColumns( [ "", "X", "Y", "Z", "A" ], ["none", "x", "y", "z", "a"] );
+		var t1 = new qx.ui.table.Table();
+//		t1.setTableModel(this.__tm1);
 
-		var t1 = new qx.ui.table.Table(tm1);
-		t1.set({ height: 200 });
+
+
+		t1.set({ height: 120 });
 		t1.setAllowShrinkX(true);
 		t1.setAllowShrinkY(true);
 
@@ -144,11 +102,12 @@ qx.Class.define("pnp.Application",
 		var tm2 = new qx.ui.table.model.Simple();
 		tm2.setColumns(["","X", "Y", "Z", "A"]);
 		tm2.setData([
-				["Nozzle Requested", 0, 0, 68, 0],
-				["Nozzle Actual", 0, 0, 68, 0]
+				["Camera Requested", 0, 0, 68, 0],
+				["Camera Actual", 0, 0, 68, 0]
 		]);
 
-		var t2 = new qx.ui.table.Table(tm1);
+		var t2 = new qx.ui.table.Table(tm2);
+		t2.set({ height: 120 });
 		t2.setAllowShrinkX(true);
 		t2.setAllowShrinkY(true);
 
@@ -171,6 +130,7 @@ qx.Class.define("pnp.Application",
 		this.__setUpStatus();
 		this.__mainvbox0.add(this.__cambox);
 
+/*
 		var send = new qx.ui.form.Button("Get Echo");
 		send.addListener("execute", function(e) {
 			var rpc = new qx.io.remote.Rpc();
@@ -180,7 +140,11 @@ qx.Class.define("pnp.Application",
 				if (exc) {
 					alert("Error " + exc.code + " : " + exc.message);
 				} else {
-					alert("World of awesome: " + ret);
+					var array = JSON.parse(ret);
+					alert("World of awesome: " + array + [1,1,1,1]);
+					alert("wtf");
+					
+
 				}
 			},'echo', 42);
 		});
@@ -188,6 +152,7 @@ qx.Class.define("pnp.Application",
 
 	
 		this.__mainvbox0.add(send);
+*/		
 		doc.add(this.__mainvbox0);
 
 
