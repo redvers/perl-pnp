@@ -1,6 +1,6 @@
 package QxServ::JsonRpcService;
 use Mojo::Base -base;
- 
+
 # whenever a service method is about to be executed, the dispatcher calls the
 # "allow_rpc_access" method to determine if the incoming request should be satisfied.
 # You can use this facility to enforce access control to the methods of your service.
@@ -14,6 +14,7 @@ our %allow_access =  (
 sub allow_rpc_access {
     my $self = shift;
     my $method = shift;
+	print("method: $method\n");
     return $allow_access{$method};
 }
  
@@ -24,8 +25,14 @@ sub allow_rpc_access {
 sub echo {
     my $self = shift;
     my $arg = shift;
-    if ($arg eq 'die'){
-       die {code=>666,message=>"Aaaargh!"};
-    }
-    return "I hear: $arg";
+	open(FILE_FD, "current_position");
+	my @coords = <FILE_FD>;
+	close(FILE_FD);
+
+	chomp(@coords);
+	my $foo = [	[split(/:/, $coords[0])],
+			[split(/:/, $coords[1])]];
+    return $foo;
 }
+
+
