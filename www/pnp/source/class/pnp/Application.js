@@ -40,6 +40,8 @@ qx.Class.define("pnp.Application",
 	__tm1		: null,
 	__tm2		: null,
 
+	__rpc_xyza	: null,
+
     /**
      * This method contains the initial application code and gets called 
      * during startup of the application
@@ -85,35 +87,46 @@ qx.Class.define("pnp.Application",
 
 	__setUpStatus : function() {
 		var vbox = new qx.ui.layout.VBox();
+		vbox.setSpacing(4);
 		this.__statusBox = new qx.ui.container.Composite(vbox);
 
-//		this.__tm1 = new pnp.RemoteDataModel();
-//		this.__tm1.setColumns( [ "", "X", "Y", "Z", "A" ], ["none", "x", "y", "z", "a"] );
-		var t1 = new qx.ui.table.Table();
-//		t1.setTableModel(this.__tm1);
-
-
-
-		t1.set({ height: 120 });
-		t1.setAllowShrinkX(true);
-		t1.setAllowShrinkY(true);
-
-
-		var tm2 = new qx.ui.table.model.Simple();
-		tm2.setColumns(["","X", "Y", "Z", "A"]);
-		tm2.setData([
-				["Camera Requested", 0, 0, 68, 0],
-				["Camera Actual", 0, 0, 68, 0]
+		this.__tm1 = new qx.ui.table.model.Simple();
+		this.__tm1.setColumns(["Camera Coordinates","X", "Y", "Z", "A"]);
+		this.__tm1.setData([
+				["Requested", 0, 0, 68, 0],
+				["Actual", 0, 0, 68, 0]
 		]);
 
-		var t2 = new qx.ui.table.Table(tm2);
-		t2.set({ height: 120 });
+		var custom = { tableColumnModel : function(obj) { return new qx.ui.table.columnmodel.Resize(obj); } };
+		var t1 = new qx.ui.table.Table(this.__tm1, custom);
+		var tcm = t1.getTableColumnModel();
+		var resizeBehavior = tcm.getBehavior();
+		resizeBehavior.setWidth(0, "60%");
+		resizeBehavior.setWidth(1, "10%");
+		resizeBehavior.setWidth(2, "10%");
+		resizeBehavior.setWidth(3, "10%");
+		t1.set({ height: 120, width: 465 });
+
+		this.__tm2 = new qx.ui.table.model.Simple();
+		this.__tm2.setColumns(["Nozzle Coordinates","X", "Y", "Z", "A"]);
+		this.__tm2.setData([
+				["Requested", 0, 0, 68, 0],
+				["Actual", 0, 0, 68, 0]
+		]);
+
+		var t2 = new qx.ui.table.Table(this.__tm2, custom);
+		var tcm = t2.getTableColumnModel();
+		var resizeBehavior = tcm.getBehavior();
+		resizeBehavior.setWidth(0, "60%");
+		resizeBehavior.setWidth(1, "10%");
+		resizeBehavior.setWidth(2, "10%");
+		resizeBehavior.setWidth(3, "10%");
+		t2.set({ height: 120, width: 465 });
 		t2.setAllowShrinkX(true);
 		t2.setAllowShrinkY(true);
 
-		this.__statusBox.add(t1)
-		this.__statusBox.add(t2)
-		
+		this.__statusBox.add(t1);
+		this.__statusBox.add(t2);
 		this.__cambox.add(this.__statusBox);
 
 
@@ -130,29 +143,30 @@ qx.Class.define("pnp.Application",
 		this.__setUpStatus();
 		this.__mainvbox0.add(this.__cambox);
 
-/*
-		var send = new qx.ui.form.Button("Get Echo");
-		send.addListener("execute", function(e) {
-			var rpc = new qx.io.remote.Rpc();
-			rpc.set({ url : 'jsonrpc/',
-				  serviceName : 'rpc'});
-			rpc.callAsync(function(ret, exc) {
-				if (exc) {
-					alert("Error " + exc.code + " : " + exc.message);
-				} else {
-					var array = JSON.parse(ret);
-					alert("World of awesome: " + array + [1,1,1,1]);
-					alert("wtf");
-					
+		this.__rpc_xyza = new qx.io.remote.Rpc(
+			"http://localhost:3000/jsonrpc/",
+			"rpc"
+		);
 
-				}
-			},'echo', 42);
-		});
+		var that = this;
+		var handler = function(result, exc) {
+			if (exc == null) {
+				that.__tm1.setValue(1, 1, result[0][0]);
+				that.__tm1.setValue(2, 1, result[0][1]);
+				that.__tm1.setValue(3, 1, result[0][2]);
+				that.__tm1.setValue(4, 1, result[0][3]);
+
+				that.__tm2.setValue(1, 1, result[1][0]);
+				that.__tm2.setValue(2, 1, result[1][1]);
+				that.__tm2.setValue(3, 1, result[1][2]);
+				that.__tm2.setValue(4, 1, result[1][3]);
+			} else {
+				alert("Exception during async call: " + exc);
+			}
+		};
 
 
-	
-		this.__mainvbox0.add(send);
-*/		
+		this.__rpc_xyza.callAsync(handler, "echo", "xyza");
 		doc.add(this.__mainvbox0);
 
 
