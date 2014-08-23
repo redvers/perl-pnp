@@ -166,7 +166,7 @@ qx.Class.define("pnp.Application",
 		};
 
 
-		this.__rpc_xyza.callAsync(handler, "echo", "xyza");
+		this.__rpc_xyza.callAsync(handler, "xyza", "xyza");
 		doc.add(this.__mainvbox0);
 
 
