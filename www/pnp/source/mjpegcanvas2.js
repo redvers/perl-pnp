@@ -69,8 +69,8 @@ MJPEGCANVAS.Viewer = function(options) {
     }
 
 context.beginPath();
-context.moveTo(0, options.height / 2);
-context.lineTo(options.width, options.height / 2);
+context.moveTo(0, 200);
+context.lineTo(options.width, 200);
 context.moveTo(options.width / 2, 0);
 context.lineTo(options.width / 2, options.height);
 
