@@ -39,8 +39,10 @@ qx.Class.define("pnp.Application",
 
 	__tm1		: null,
 	__tm2		: null,
+	__tm3		: null,
 
 	__rpc_xyza	: null,
+	__rpc_feeder	: null,
 
     /**
      * This method contains the initial application code and gets called 
@@ -66,23 +68,48 @@ qx.Class.define("pnp.Application",
 	__setUpCameras : function() {
 		var hbox0 = new qx.ui.layout.HBox();
 		hbox0.setSpacing(4);
+		var img = new Image;
+		var that = this;
+		img.src = "http://192.168.1.19:8091/?action=stream";
 	
+		var imgdown = new Image;
+		imgdown.src = "http://192.168.1.19:8090/?action=stream";
+
+		var imgvanity = new Image;
+		imgvanity.src = "http://192.168.1.19:8092/?action=stream";
+
 		this.__cambox = new qx.ui.container.Composite(hbox0);
-	
-		this.__camup = new qx.ui.embed.Iframe("c1.html");
-		this.__camup.set({ scrollbar: "no", width: 320, height: 240});
 
-		this.__camdown = new qx.ui.embed.Iframe("c2.html");
-		this.__camdown.set({ scrollbar: "no", width: 320, height: 240});
+		this.__camup = new qx.ui.embed.Canvas();
+		this.__camup.set({ canvasWidth: 320, canvasHeight: 240, width: 320 });
+		var ctx = this.__camup.getContext2d();
 
-		this.__camvanity = new qx.ui.embed.Iframe("c3.html");
-		this.__camvanity.set({ scrollbar: "no", width: 320, height: 240});
+		this.__camup.addListener("click", function(e) {
+				var x = e.getViewportLeft();
+				var y = e.getViewportTop();
+
+				alert("x: "+ x + "y: " + y); }, this);
+
+		this.__camdown = new qx.ui.embed.Canvas();
+		this.__camdown.set({ canvasWidth: 320, canvasHeight: 240, width: 320 });
+		var ctxdown = this.__camdown.getContext2d();
+
+		this.__camvanity = new qx.ui.embed.Canvas();
+		this.__camvanity.set({ canvasWidth: 320, canvasHeight: 240, width: 320 });
+		var ctxvanity = this.__camvanity.getContext2d();
 
 		this.__cambox.add(this.__camup);
 		this.__cambox.add(this.__camdown);
 		this.__cambox.add(this.__camvanity);
 
+		var timer = qx.util.TimerManager.getInstance();
 
+		timer.start(function(nowt, timerId) {
+			ctx.drawImage(img,0,0);
+			ctxdown.drawImage(imgdown,0,0);
+			ctxvanity.drawImage(imgvanity,0,0);
+		},
+		200, this, null, 3000);
 	},
 
 	__setUpStatus : function() {
@@ -129,20 +156,6 @@ qx.Class.define("pnp.Application",
 		this.__statusBox.add(t2);
 		this.__cambox.add(this.__statusBox);
 
-
-	},
-
-	__setUpGUI : function() {
-		var doc = this.getRoot();
-		var vbox0 = new qx.ui.layout.VBox();
-		vbox0.setSpacing(4);
-	
-		this.__mainvbox0 = new qx.ui.container.Composite(vbox0);
-
-		this.__setUpCameras();
-		this.__setUpStatus();
-		this.__mainvbox0.add(this.__cambox);
-
 		this.__rpc_xyza = new qx.io.remote.Rpc(
 			"http://localhost:3000/jsonrpc/",
 			"rpc"
@@ -167,6 +180,62 @@ qx.Class.define("pnp.Application",
 
 
 		this.__rpc_xyza.callAsync(handler, "xyza", "xyza");
+
+	},
+
+	__setUpFeeders : function() {
+		var hbox = new qx.ui.layout.HBox();
+		this.__feederbox = new qx.ui.container.Composite(hbox);
+		hbox.setSpacing(4);
+
+		this.__tm3 = new qx.ui.table.model.Simple();
+		this.__tm3.setColumns(["ID", "Package", "Value", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" ]);
+
+		var custom = { tableColumnModel : function(obj) { return new qx.ui.table.columnmodel.Resize(obj); } };
+                var t3 = new qx.ui.table.Table(this.__tm3, custom);
+		t3.set({ width: 968 });
+                var tcm = t3.getTableColumnModel();
+                var resizeBehavior = tcm.getBehavior();
+                resizeBehavior.setWidth(0, "3%");
+                resizeBehavior.setWidth(1, "8%");
+                resizeBehavior.setWidth(2, "8%");
+
+		this.__feederbox.add(t3);
+
+		this.__rpc_feeder = new qx.io.remote.Rpc(
+			"http://localhost:3000/jsonrpc/",
+			"rpc"
+		);
+
+		var that = this;
+		var handler = function(result, exc) {
+			if (exc == null) {
+				that.__tm3.setData(result);
+//				that.__tm3.setValue(2, 1, result[0][1]);
+//				that.__tm3.setValue(3, 1, result[0][2]);
+//				that.__tm3.setValue(4, 1, result[0][3]);
+			} else {
+				alert("Exception during async call: " + exc);
+			}
+		};
+
+
+		this.__rpc_feeder.callAsync(handler, "feeder", "feeder");
+	},
+
+	__setUpGUI : function() {
+		var doc = this.getRoot();
+		var vbox0 = new qx.ui.layout.VBox();
+		vbox0.setSpacing(4);
+	
+		this.__mainvbox0 = new qx.ui.container.Composite(vbox0);
+
+		this.__setUpCameras();
+		this.__setUpStatus();
+		this.__setUpFeeders();
+		this.__mainvbox0.add(this.__cambox);
+		this.__mainvbox0.add(this.__feederbox);
+
 		doc.add(this.__mainvbox0);
 
 
