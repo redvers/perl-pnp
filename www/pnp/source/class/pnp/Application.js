@@ -65,24 +65,37 @@ qx.Class.define("pnp.Application",
 
 	},
 
+	crosshair : function(context) {
+		context.beginPath();
+		context.moveTo(0, 120);
+		context.lineTo(320, 120);
+		context.moveTo(160, 0);
+		context.lineTo(160, 240);
+		context.strokeStyle = "#FF0000";
+		context.stroke();
+
+	},
+
 	__setUpCameras : function() {
 		var hbox0 = new qx.ui.layout.HBox();
 		hbox0.setSpacing(4);
 		var img = new Image;
 		var that = this;
-		img.src = "http://192.168.1.19:8091/?action=stream";
+		img.src = "http://192.168.1.19:8092/?action=stream";
 	
 		var imgdown = new Image;
-		imgdown.src = "http://192.168.1.19:8090/?action=stream";
+		imgdown.src = "http://192.168.1.19:8091/?action=stream";
 
 		var imgvanity = new Image;
-		imgvanity.src = "http://192.168.1.19:8092/?action=stream";
+		imgvanity.src = "http://192.168.1.19:8090/?action=stream";
 
 		this.__cambox = new qx.ui.container.Composite(hbox0);
 
 		this.__camup = new qx.ui.embed.Canvas();
 		this.__camup.set({ canvasWidth: 320, canvasHeight: 240, width: 320 });
 		var ctx = this.__camup.getContext2d();
+
+
 
 		this.__camup.addListener("click", function(e) {
 				var x = e.getViewportLeft();
@@ -98,16 +111,21 @@ qx.Class.define("pnp.Application",
 		this.__camvanity.set({ canvasWidth: 320, canvasHeight: 240, width: 320 });
 		var ctxvanity = this.__camvanity.getContext2d();
 
-		this.__cambox.add(this.__camup);
-		this.__cambox.add(this.__camdown);
 		this.__cambox.add(this.__camvanity);
+		this.__cambox.add(this.__camdown);
+		this.__cambox.add(this.__camup);
 
 		var timer = qx.util.TimerManager.getInstance();
 
 		timer.start(function(nowt, timerId) {
 			ctx.drawImage(img,0,0);
+			this.crosshair(ctx);
+
 			ctxdown.drawImage(imgdown,0,0);
+			this.crosshair(ctxdown);
+
 			ctxvanity.drawImage(imgvanity,0,0);
+			this.crosshair(ctxvanity);
 		},
 		200, this, null, 3000);
 	},
