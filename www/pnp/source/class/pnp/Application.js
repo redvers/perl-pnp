@@ -42,6 +42,7 @@ qx.Class.define("pnp.Application",
 	__tm3		: null,
 
 	__rpc_xyza	: null,
+	__rpc_relxyza	: null,
 	__rpc_feeder	: null,
 
     /**
@@ -95,13 +96,31 @@ qx.Class.define("pnp.Application",
 		this.__camup.set({ canvasWidth: 320, canvasHeight: 240, width: 320 });
 		var ctx = this.__camup.getContext2d();
 
+		this.__rpc_relxyza = new qx.io.remote.Rpc(
+			"http://localhost:3000/jsonrpc/",
+			"rpc"
+		);
 
+		var that = this;
+		var handler = function(result, exc) {
+			if (exc == null) {
+			} else {
+			}
+		};
 
 		this.__camup.addListener("click", function(e) {
 				var x = e.getViewportLeft();
 				var y = e.getViewportTop();
 
-				alert("x: "+ x + "y: " + y); }, this);
+				x -= (320 * 2 ) + 8;	// Now we're
+				y -= 4;			// in the correct frame
+
+				x -= (320 / 2);		// Relative 
+				y -= (240 / 2);		// to crosshairs
+
+				this.__rpc_relxyza.callAsync(handler, "relmove", [x,y]);
+				alert("doh");
+		}, that, false);
 
 		this.__camdown = new qx.ui.embed.Canvas();
 		this.__camdown.set({ canvasWidth: 320, canvasHeight: 240, width: 320 });
