@@ -63,10 +63,21 @@ sub relmove {
 	my $y = $args->[1];
 
 	$self->pnp->relMove($x, $y);
-
-
-
 }
+
+sub absmove {
+	my $self = shift;
+	my $args = shift;
+
+	my $x = $args->[0];
+	my $y = $args->[1];
+
+	$self->pnp->absMove($x, $y);
+}
+
+
+
+
 
 
 

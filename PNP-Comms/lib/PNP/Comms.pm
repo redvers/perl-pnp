@@ -42,7 +42,7 @@ sub BUILD {
 
 sub tick {
 	my $self = shift;
-	my @array = ($self->{'select'})->can_read(0.1);
+	my @array = ($self->{'select'})->can_read(0.01);
 
 	if ($#array >= 0) {
 		my $socket = $self->{'socket'};
@@ -53,16 +53,15 @@ sub tick {
 		my @lines = split(/\n/, $line_in);
 		chomp(@lines);
 
-		if ($self->stat == 5) {
-			print($socket '{"sr":""}');
-			print($socket "\n");
-		}
-
-
 		foreach my $line (@lines) {
 			$self->wr_debug("\n>> $line <<\n");
-			if ($line =~ /^{"sr"/) {
+			if ($line =~ /{"sr"/) {
 				$self->parsesr($line);
+				@array = ($self->{'select'})->can_read(0.01);
+				if (($self->stat == 5) && ($#array == -1)) { # BufferEmpty + moving
+					print($socket '{"sr":""}');
+					print($socket "\n");
+				}
 			}
 #			$self->wr_debug(sprintf("x: %f\ny: %f\nz: %f\na: %f\nvel: %f\n",
 #				$self->x, $self->y, $self->z, $self->a, $self->vel));
@@ -153,10 +152,28 @@ sub relMove {
 	push(@{$self->wr_fifo}, sprintf('{"gc":"G0 X%f Y%f"}', $xto, $yto));
 	push(@{$self->wr_fifo}, '{"gc":"G4 P1"}');
 	push(@{$self->wr_fifo}, sprintf('{"gc":"G0 X%f Y%f"}', $xfin, $yfin));
-
-	
 }
 
+sub absMove {
+	my $self = shift;
+	my $socket = $self->{'socket'};
+	my $x = shift;			
+	my $y = shift;		
+
+	## Calculate positions in advance because they're gonna move.
+	## Let's overshoot because that's easier on the brane.
+
+	my $xto = $x + $self->lashx;
+	my $yto = $y + $self->lashy;
+
+	my $xfin = $x;
+	my $yfin = $y;
+
+	push(@{$self->wr_fifo},'{"gc": "G90"}');
+	push(@{$self->wr_fifo}, sprintf('{"gc":"G0 X%f Y%f"}', $xto, $yto));
+	push(@{$self->wr_fifo}, '{"gc":"G4 P1"}');
+	push(@{$self->wr_fifo}, sprintf('{"gc":"G0 X%f Y%f"}', $xfin, $yfin));
+}
 
 
 sub wr_debug {

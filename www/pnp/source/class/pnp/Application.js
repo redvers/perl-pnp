@@ -241,7 +241,7 @@ qx.Class.define("pnp.Application",
                 timer.start(function(nowt, timerId) {
 			this.__rpc_xyza.callAsync(handler, "xyza", "xyza");
                 },
-                200, this, null, 200);
+                2000, this, null, 2000);
         },
 
 
@@ -305,7 +305,11 @@ qx.Class.define("pnp.Application",
 			}
 		};
 
-		var g0x0y0z68 = new qx.ui.form.Button("G0X0Y0Z68");
+		var g0x0y0z68 = new qx.ui.form.Button("G0X0Y0");
+		g0x0y0z68.addListener("execute", function(e) {
+			this.__rpc_relxyza.callAsync(handler, "absmove", [0, 0]);
+		}, this);
+
 		var g0relxpos = new qx.ui.form.Button(">X>");
 
 		g0relxpos.addListener("execute", function(e) {
