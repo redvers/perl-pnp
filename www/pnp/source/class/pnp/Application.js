@@ -118,8 +118,12 @@ qx.Class.define("pnp.Application",
 				x -= (320 / 2);		// Relative 
 				y -= (240 / 2);		// to crosshairs
 
-				this.__rpc_relxyza.callAsync(handler, "relmove", [x,y]);
-				alert("doh");
+				x /= 50;
+				y /= 50;
+
+
+				// x and y change due to camera mounting
+				this.__rpc_relxyza.callAsync(handler, "relmove", [y,x]);
 		}, that, false);
 
 		this.__camdown = new qx.ui.embed.Canvas();
