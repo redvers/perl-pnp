@@ -334,7 +334,13 @@ qx.Class.define("pnp.Application",
 		var g0zdn = new qx.ui.form.Button("vZv");
 
 		var g0aup = new qx.ui.form.Button("^A>");
+		g0aup.addListener("execute", function(e) {
+			this.__rpc_relxyza.callAsync(handler, "relamove", [this.__a_jogval]);
+		}, this);
 		var g0adn = new qx.ui.form.Button("vA<");
+		g0adn.addListener("execute", function(e) {
+			this.__rpc_relxyza.callAsync(handler, "relamove", [0 - this.__a_jogval]);
+		}, this);
 
 		var g92z68 = new qx.ui.form.Button("G92Z68");
 		var g92xya = new qx.ui.form.Button("G92X0Y0A0");

@@ -15,6 +15,7 @@ our %allow_access =  (
     xyza => 1,
     feeder => 1,
     relmove => 1,
+    relamove => 1,
     absmove => 1
 );
  
@@ -63,6 +64,15 @@ sub relmove {
 	my $y = $args->[1];
 
 	$self->pnp->relMove($x, $y);
+}
+
+sub relamove {
+	my $self = shift;
+	my $args = shift;
+
+	my $a = $args->[0];
+
+	$self->pnp->relAMove($a);
 }
 
 sub absmove {

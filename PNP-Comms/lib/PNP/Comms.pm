@@ -154,6 +154,17 @@ sub relMove {
 	push(@{$self->wr_fifo}, sprintf('{"gc":"G0 X%f Y%f"}', $xfin, $yfin));
 }
 
+sub relAMove {
+	my $self = shift;
+	my $socket = $self->{'socket'};
+	my $a = shift;			
+
+	my $afin = $self->a + $a;
+
+	push(@{$self->wr_fifo},'{"gc": "G90"}');
+	push(@{$self->wr_fifo}, sprintf('{"gc":"G0 A%f"}', $afin));
+}
+
 sub absMove {
 	my $self = shift;
 	my $socket = $self->{'socket'};
