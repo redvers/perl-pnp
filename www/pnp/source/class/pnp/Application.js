@@ -34,6 +34,7 @@ qx.Class.define("pnp.Application",
 	__camup		: null,
 	__camdown	: null,
 	__camvanity	: null,
+	__navbox	: null,
 
 	__statusBox	: null,
 
@@ -279,6 +280,57 @@ qx.Class.define("pnp.Application",
 		this.__rpc_feeder.callAsync(handler, "feeder", "feeder");
 	},
 
+	__setUpNav : function() {
+		var grid = new qx.ui.layout.Grid();
+		this.__navbox = new qx.ui.container.Composite(grid);
+		grid.setSpacing(4);
+
+/*
+		## [  ]  [ X]  [NozzleAuth]	
+		## [ X] [G0X0Y0Z68] [ X]
+		## [  ]  [ X]  [CameraAuth]
+
+		## [HomeHere] [JOG#]
+
+*/
+
+		var g0x0y0z68 = new qx.ui.form.Button("G0X0Y0Z68");
+		var g0relxpos = new qx.ui.form.Button(">X>");
+		var g0relxneg = new qx.ui.form.Button("<X<");
+
+		var g0relypos = new qx.ui.form.Button("^Y^");
+		var g0relyneg = new qx.ui.form.Button("vYv");
+
+		var g0zup = new qx.ui.form.Button("^Z^");
+		var g0zdn = new qx.ui.form.Button("vZv");
+
+		var g0aup = new qx.ui.form.Button("^A>");
+		var g0adn = new qx.ui.form.Button("vA<");
+
+		var g92z68 = new qx.ui.form.Button("G92Z68");
+		var g92xya = new qx.ui.form.Button("G92X0Y0A0");
+
+		this.__navbox.add(g0x0y0z68, {row: 1, column: 1});
+		this.__navbox.add(g0relxpos, {row: 1, column: 2});
+		this.__navbox.add(g0relxneg, {row: 1, column: 0});
+
+		this.__navbox.add(g0relypos, {row: 0, column: 1});
+		this.__navbox.add(g0relyneg, {row: 2, column: 1});
+
+		this.__navbox.add(g0zup, {row: 0, column: 2});
+		this.__navbox.add(g0zdn, {row: 2, column: 2});
+
+		this.__navbox.add(g0aup, {row: 0, column: 0});
+		this.__navbox.add(g0adn, {row: 2, column: 0});
+
+		this.__navbox.add(g92z68, {row: 0, column: 3});
+		this.__navbox.add(g92xya, {row: 2, column: 3});
+
+
+
+
+		},
+
 	__setUpGUI : function() {
 		var doc = this.getRoot();
 		var vbox0 = new qx.ui.layout.VBox();
@@ -289,7 +341,9 @@ qx.Class.define("pnp.Application",
 		this.__setUpCameras();
 		this.__setUpStatus();
 		this.__setUpFeeders();
+		this.__setUpNav();
 		this.__mainvbox0.add(this.__cambox);
+		this.__mainvbox0.add(this.__navbox);
 		this.__mainvbox0.add(this.__feederbox);
 
 		doc.add(this.__mainvbox0);
