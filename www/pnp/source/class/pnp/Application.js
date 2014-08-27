@@ -318,7 +318,13 @@ qx.Class.define("pnp.Application",
 		}, this);
 
 		var g0relypos = new qx.ui.form.Button("^Y^");
+		g0relypos.addListener("execute", function(e) {
+			this.__rpc_relxyza.callAsync(handler, "relmove", [0, this.__xyz_jogval]);
+		}, this);
 		var g0relyneg = new qx.ui.form.Button("vYv");
+		g0relyneg.addListener("execute", function(e) {
+			this.__rpc_relxyza.callAsync(handler, "relmove", [0, 0 - this.__xyz_jogval]);
+		}, this);
 
 		var g0zup = new qx.ui.form.Button("^Z^");
 		var g0zdn = new qx.ui.form.Button("vZv");
