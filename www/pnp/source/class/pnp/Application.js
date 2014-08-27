@@ -46,6 +46,11 @@ qx.Class.define("pnp.Application",
 	__rpc_relxyza	: null,
 	__rpc_feeder	: null,
 
+	__xyz_jogval	: null,
+	__a_jogval	: null,
+
+
+
     /**
      * This method contains the initial application code and gets called 
      * during startup of the application
@@ -188,10 +193,10 @@ qx.Class.define("pnp.Application",
 		t1.set({ height: 120, width: 465 });
 
 		this.__tm2 = new qx.ui.table.model.Simple();
-		this.__tm2.setColumns(["Nozzle Coordinates","X", "Y", "Z", "A"]);
+		this.__tm2.setColumns(["Location","X", "Y", "Z", "A"]);
 		this.__tm2.setData([
-				["Requested", 0, 0, 68, 0],
-				["Actual", 0, 0, 68, 0]
+				["Nozzle", "X", "X", "X", "X"],
+				["Camera", "X", "X", "", ""]
 		]);
 
 		var t2 = new qx.ui.table.Table(this.__tm2, custom);
@@ -205,8 +210,10 @@ qx.Class.define("pnp.Application",
 		t2.setAllowShrinkX(true);
 		t2.setAllowShrinkY(true);
 
-		this.__statusBox.add(t1);
+//		this.__statusBox.add(t1);
 		this.__statusBox.add(t2);
+		this.__setUpNav();
+		this.__statusBox.add(this.__navbox);
 		this.__cambox.add(this.__statusBox);
 
 		this.__rpc_xyza = new qx.io.remote.Rpc(
@@ -217,15 +224,13 @@ qx.Class.define("pnp.Application",
 		var that = this;
 		var handler = function(result, exc) {
 			if (exc == null) {
-				that.__tm1.setValue(1, 1, result[0][0]);
-				that.__tm1.setValue(2, 1, result[0][1]);
-				that.__tm1.setValue(3, 1, result[0][2]);
-				that.__tm1.setValue(4, 1, result[0][3]);
+				that.__tm2.setValue(1, 0, result[0][0]);
+				that.__tm2.setValue(2, 0, result[0][1]);
+				that.__tm2.setValue(3, 0, result[0][2]);
+				that.__tm2.setValue(4, 0, result[0][3]);
 
 				that.__tm2.setValue(1, 1, result[1][0]);
 				that.__tm2.setValue(2, 1, result[1][1]);
-				that.__tm2.setValue(3, 1, result[1][2]);
-				that.__tm2.setValue(4, 1, result[1][3]);
 			} else {
 				alert("Exception during async call: " + exc);
 			}
@@ -293,10 +298,24 @@ qx.Class.define("pnp.Application",
 		## [HomeHere] [JOG#]
 
 */
+		var that = this;
+		var handler = function(result, exc) {
+			if (exc == null) {
+			} else {
+			}
+		};
 
 		var g0x0y0z68 = new qx.ui.form.Button("G0X0Y0Z68");
 		var g0relxpos = new qx.ui.form.Button(">X>");
+
+		g0relxpos.addListener("execute", function(e) {
+			this.__rpc_relxyza.callAsync(handler, "relmove", [this.__xyz_jogval, 0]);
+		}, this);
+	
 		var g0relxneg = new qx.ui.form.Button("<X<");
+		g0relxneg.addListener("execute", function(e) {
+			this.__rpc_relxyza.callAsync(handler, "relmove", [0 - this.__xyz_jogval, 0]);
+		}, this);
 
 		var g0relypos = new qx.ui.form.Button("^Y^");
 		var g0relyneg = new qx.ui.form.Button("vYv");
@@ -309,6 +328,41 @@ qx.Class.define("pnp.Application",
 
 		var g92z68 = new qx.ui.form.Button("G92Z68");
 		var g92xya = new qx.ui.form.Button("G92X0Y0A0");
+
+		var sxyz = new qx.ui.form.Spinner();
+		sxyz.addListener("changeValue", function(e) {
+			this.__xyz_jogval = e.getData();
+		}, this);
+
+
+
+		var sa = new qx.ui.form.Spinner();
+		sa.addListener("changeValue", function(e) {
+			this.__a_jogval = e.getData();
+		}, this);
+
+		sxyz.set({
+			maximum: 100,
+			minimum: 0.001
+		});
+
+		sa.set({
+			maximum: 180,
+			minimum: 0.1
+		});
+
+		var nf = new qx.util.format.NumberFormat();
+		nf.setMaximumFractionDigits(3);
+
+		var anf = new qx.util.format.NumberFormat();
+		nf.setMaximumFractionDigits(3);
+		anf.setMaximumFractionDigits(1);
+		sxyz.setNumberFormat(nf);
+
+		sa.setNumberFormat(anf);
+
+		var sxyzl = new qx.ui.basic.Label("XYZ Jog (mm)");
+		var sal = new qx.ui.basic.Label("A Jog (deg)");
 
 		this.__navbox.add(g0x0y0z68, {row: 1, column: 1});
 		this.__navbox.add(g0relxpos, {row: 1, column: 2});
@@ -326,6 +380,12 @@ qx.Class.define("pnp.Application",
 		this.__navbox.add(g92z68, {row: 0, column: 3});
 		this.__navbox.add(g92xya, {row: 2, column: 3});
 
+		this.__navbox.add(sxyzl, {row: 0, column: 4});
+		this.__navbox.add(sxyz, {row: 0, column: 5});
+
+		this.__navbox.add(sal, {row: 1, column: 4});
+		this.__navbox.add(sa, {row: 1, column: 5});
+
 
 
 
@@ -341,9 +401,8 @@ qx.Class.define("pnp.Application",
 		this.__setUpCameras();
 		this.__setUpStatus();
 		this.__setUpFeeders();
-		this.__setUpNav();
+//		this.__setUpNav();
 		this.__mainvbox0.add(this.__cambox);
-		this.__mainvbox0.add(this.__navbox);
 		this.__mainvbox0.add(this.__feederbox);
 
 		doc.add(this.__mainvbox0);
