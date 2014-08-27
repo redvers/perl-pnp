@@ -186,10 +186,11 @@ qx.Class.define("pnp.Application",
 		var t1 = new qx.ui.table.Table(this.__tm1, custom);
 		var tcm = t1.getTableColumnModel();
 		var resizeBehavior = tcm.getBehavior();
-		resizeBehavior.setWidth(0, "60%");
-		resizeBehavior.setWidth(1, "10%");
-		resizeBehavior.setWidth(2, "10%");
-		resizeBehavior.setWidth(3, "10%");
+		resizeBehavior.setWidth(0, "20%");
+		resizeBehavior.setWidth(1, "20%");
+		resizeBehavior.setWidth(2, "20%");
+		resizeBehavior.setWidth(3, "20%");
+		resizeBehavior.setWidth(4, "20%");
 		t1.set({ height: 120, width: 465 });
 
 		this.__tm2 = new qx.ui.table.model.Simple();
@@ -202,10 +203,11 @@ qx.Class.define("pnp.Application",
 		var t2 = new qx.ui.table.Table(this.__tm2, custom);
 		var tcm = t2.getTableColumnModel();
 		var resizeBehavior = tcm.getBehavior();
-		resizeBehavior.setWidth(0, "60%");
-		resizeBehavior.setWidth(1, "10%");
-		resizeBehavior.setWidth(2, "10%");
-		resizeBehavior.setWidth(3, "10%");
+		resizeBehavior.setWidth(0, "22%");
+		resizeBehavior.setWidth(1, "18%");
+		resizeBehavior.setWidth(2, "18%");
+		resizeBehavior.setWidth(3, "18%");
+		resizeBehavior.setWidth(4, "18%");
 		t2.set({ height: 120, width: 465 });
 		t2.setAllowShrinkX(true);
 		t2.setAllowShrinkY(true);
@@ -343,7 +345,13 @@ qx.Class.define("pnp.Application",
 		}, this);
 
 		var g92z68 = new qx.ui.form.Button("G92Z68");
+		g92z68.addListener("execute", function(e) {
+			this.__rpc_relxyza.callAsync(handler, "g92z68", []);
+		}, this);
 		var g92xya = new qx.ui.form.Button("G92X0Y0A0");
+		g92xya.addListener("execute", function(e) {
+			this.__rpc_relxyza.callAsync(handler, "g92xya", []);
+		}, this);
 
 		var sxyz = new qx.ui.form.Spinner();
 		sxyz.addListener("changeValue", function(e) {

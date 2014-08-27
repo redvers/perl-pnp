@@ -14,6 +14,8 @@ has 'pnp';
 our %allow_access =  (
     xyza => 1,
     feeder => 1,
+    g92xya => 1,
+    g92z68 => 1,
     relmove => 1,
     relamove => 1,
     absmove => 1
@@ -64,6 +66,20 @@ sub relmove {
 	my $y = $args->[1];
 
 	$self->pnp->relMove($x, $y);
+}
+
+sub g92xya {
+	my $self = shift;
+	my $args = shift;
+
+	$self->pnp->g92xya();
+}
+
+sub g92z68 {
+	my $self = shift;
+	my $args = shift;
+
+	$self->pnp->g92z68();
 }
 
 sub relamove {

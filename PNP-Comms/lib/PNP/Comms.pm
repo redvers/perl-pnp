@@ -130,6 +130,24 @@ sub getCurrentPos {
 
 }
 
+sub g92xya {
+	my $self = shift;
+
+	my $socket = $self->{'socket'};
+	print($socket '{"gc":"G92X0Y0A0"}'."\n");
+	print($socket '{"sr":""}'."\n");
+
+}
+
+sub g92z68 {
+	my $self = shift;
+
+	my $socket = $self->{'socket'};
+	print($socket '{"gc":"G92Z68"}'."\n");
+	print($socket '{"sr":""}'."\n");
+
+}
+
 sub relMove {
 	my $self = shift;
 	my $socket = $self->{'socket'};
