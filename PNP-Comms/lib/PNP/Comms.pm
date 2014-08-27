@@ -13,10 +13,19 @@ use IO::Socket::INET;
 use Data::Dumper;
 
 has 'debug' => (is => 'rw', isa => 'Int');
+has 'x' => (is => 'rw');
+has 'y' => (is => 'rw');
+has 'z' => (is => 'rw');
+has 'a' => (is => 'rw');
+has 'vel' => (is => 'rw');
+
+has 'lashx' => (is => 'rw', isa => 'Int', default => sub { return -2 });
+has 'lashy' => (is => 'rw', isa => 'Int', default => sub { return -2 });
 
 sub BUILD {
 	my $self = shift;
-	$self->{'socket'} = IO::Socket::INET->new(PeerAddr => '127.0.0.1:5353') || die;
+	print("Building...\n");
+	$self->{'socket'} = IO::Socket::INET->new(PeerAddr => '192.168.1.19:5353') || die;
 	$self->{'select'} = IO::Select->new();
 	($self->{'select'})->add($self->{'socket'});
 
@@ -26,11 +35,148 @@ sub BUILD {
 
 }
 
+sub tick {
+	my $self = shift;
+	my @array = ($self->{'select'})->can_read(0.01);
+
+	if ($#array >= 0) {
+		my $socket = $self->{'socket'};
+		my $line_in = <$socket>;
+
+		$line_in =~ s///g;
+
+		my @lines = split(/\n/, $line_in);
+		chomp(@lines);
+
+		foreach my $line (@lines) {
+			$self->wr_debug("\n>> $line <<\n");
+			if ($line =~ /"sr"/) {
+				$self->parsesr($line);
+			}
+			$self->wr_debug(sprintf("x: %f\ny: %f\nz: %f\na: %f\nvel: %f\n",
+				$self->x, $self->y, $self->z, $self->a, $self->vel));
+		}
+	} else {
+		$self->wr_debug(".");
+	}
+}
+
+
+
+sub parsesr {
+	my $self = shift;
+	my $line_in = shift;
+
+	my $ds = decode_json($line_in);
+	$self->wr_debug(Dumper $ds);
+
+	if (!defined($ds->{'r'})) {
+		# Must be an sr kinda day:
+		if (!defined($ds->{'sr'})) {
+			die; # Just plain busted
+		}
+		$self->x($ds->{'sr'}{'posx'});
+		$self->y($ds->{'sr'}{'posy'});
+		$self->z($ds->{'sr'}{'posz'});
+		$self->a($ds->{'sr'}{'posa'});
+		$self->vel($ds->{'sr'}{'vel'});
+	} else {
+		$self->x($ds->{'r'}{'sr'}{'posx'});
+		$self->y($ds->{'r'}{'sr'}{'posy'});
+		$self->z($ds->{'r'}{'sr'}{'posz'});
+		$self->a($ds->{'r'}{'sr'}{'posa'});
+		$self->vel($ds->{'r'}{'sr'}{'vel'});
+
+	}
+}
+
+sub getCurrentPos {
+	my $self = shift;
+
+	my $socket = $self->{'socket'};
+	print($socket '{"sr":""}'."\n");
+
+}
+
+sub relMove {
+	my $self = shift;
+	my $socket = $self->{'socket'};
+	my $x = shift;
+	my $y = shift;
+
+	$x += $self->lashx;
+	$y += $self->lashy;
+
+	print('{"gc":"G91"}'."\n");
+
+	my $smovestr = sprintf('{"gc":"G0 X%f Y%f"}\n', $x, $y);
+	print($smovestr);
+
+	$x -= $self->lashx;
+	$y -= $self->lashy;
+
+	$smovestr = sprintf('{"gc":"G0 X%f Y%f"}\n', $x, $y);
+	print($smovestr);
+
+	print($socket '{"gc": "G90"}'."\n");
+	
+}
+
+
+
+sub wr_debug {
+	my $self = shift;
+	if ($self->{'debug'}) {
+		my $line_in;
+		while ($line_in = shift) {
+			print(STDERR $line_in);
+		}
+	}
+}
+1;
+
+__END__
+
+	$response = $self->one_line();
+
+	$self->wr_debug("Reporting on this one: ");
+	$self->wr_debug(Dumper $response);
+
+	if (ref($response->{'f'} eq "HASH")) {
+		$self->wr_debug(sprintf("Returning: %f, %f, %f, %f",$response->{'r'}{'sr'}{'posx'},$response->{'r'}{'sr'}{'posy'},$response->{'r'}{'sr'}{'posz'},$response->{'r'}{'sr'}{'posa'}));
+		return( $response->{'r'}{'sr'}{'posx'},
+		$response->{'r'}{'sr'}{'posy'},
+		$response->{'r'}{'sr'}{'posz'},
+		$response->{'r'}{'sr'}{'posa'});
+	} else {
+		$self->wr_debug(sprintf("Returning: %f, %f, %f, %f",$response->{'r'}{'sr'}{'posx'},$response->{'sr'}{'posy'},$response->{'sr'}{'posz'},$response->{'sr'}{'posa'}));
+		return( $response->{'sr'}{'posx'},
+		$response->{'sr'}{'posy'},
+		$response->{'sr'}{'posz'},
+		$response->{'sr'}{'posa'});
+	}
+
+}
+
+sub wr_debug {
+	my $self = shift;
+	if ($self->{'debug'}) {
+		my $line_in;
+		while ($line_in = shift) {
+			print(STDERR $line_in);
+		}
+	}
+}
+
+1;
+__END__
 sub locationCallback {
 	my $self = shift;
 	$self->{'callback'} = shift;
 	$self->wr_debug("Registered callback ".$self->{'callback'}." on locationCallback\n");
 }
+
+
 
 sub moveAbsTo {
 	my $self = shift;
@@ -90,6 +236,7 @@ sub moveRel {
 	my $a = shift;
 
 	my ($curx, $cury, $curz, $cura) = $self->getCurrentPos();
+	$self->wr_debug("Current location is: $curx, $cury, $curz, $cura");
 
 	$self->moveAbsTo(
 			($x + $curx),
@@ -108,17 +255,26 @@ sub getCurrentPos {
 	print($socket '{"sr":""}'."\n");
 	my $response = $self->one_line();
 
-	if ($response->{'f'}[1] != 0) {
 	$self->wr_debug(Dumper $response);
-		die("Command failed");
-	}
 
 	$response = $self->one_line();
 
-	return( $response->{'sr'}{'posx'},
+	$self->wr_debug("Reporting on this one: ");
+	$self->wr_debug(Dumper $response);
+
+	if (ref($response->{'f'} eq "HASH")) {
+		$self->wr_debug(sprintf("Returning: %f, %f, %f, %f",$response->{'r'}{'sr'}{'posx'},$response->{'r'}{'sr'}{'posy'},$response->{'r'}{'sr'}{'posz'},$response->{'r'}{'sr'}{'posa'}));
+		return( $response->{'r'}{'sr'}{'posx'},
+		$response->{'r'}{'sr'}{'posy'},
+		$response->{'r'}{'sr'}{'posz'},
+		$response->{'r'}{'sr'}{'posa'});
+	} else {
+		$self->wr_debug(sprintf("Returning: %f, %f, %f, %f",$response->{'r'}{'sr'}{'posx'},$response->{'sr'}{'posy'},$response->{'sr'}{'posz'},$response->{'sr'}{'posa'}));
+		return( $response->{'sr'}{'posx'},
 		$response->{'sr'}{'posy'},
 		$response->{'sr'}{'posz'},
 		$response->{'sr'}{'posa'});
+	}
 
 }
 
@@ -132,7 +288,8 @@ sub one_line {
 		my @array = ($self->{'select'})->can_read(1);
 		if ($#array >= 0) {
 			$line = <$socket>;
-			if ($line =~ /^\r{"sr/) {
+			$self->wr_debug("got: $line");
+			if ($line =~ /{"sr/) {
 				if (ref($self->{'callback'}) eq "CODE") {
 					my $func = $self->{'callback'};
 					$func->($line);

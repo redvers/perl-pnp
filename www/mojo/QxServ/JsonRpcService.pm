@@ -1,5 +1,9 @@
 package QxServ::JsonRpcService;
 use Mojo::Base -base;
+use File::Copy;
+use Data::Dumper;
+
+has 'pnp';
 
 # whenever a service method is about to be executed, the dispatcher calls the
 # "allow_rpc_access" method to determine if the incoming request should be satisfied.
@@ -8,7 +12,10 @@ use Mojo::Base -base;
 # of the "allow_rpc_access" method could depend on the session status.
  
 our %allow_access =  (
-    echo => 1
+    xyza => 1,
+    feeder => 1,
+    relmove => 1,
+    absmove => 1
 );
  
 sub allow_rpc_access {
@@ -22,17 +29,46 @@ sub allow_rpc_access {
 # it dies. Here we use a hash pointer with a code and a message property
 # with this we can control what gets sent back to the qooxdoo application.
  
-sub echo {
+sub xyza {
     my $self = shift;
     my $arg = shift;
-	open(FILE_FD, "current_position");
-	my @coords = <FILE_FD>;
-	close(FILE_FD);
-
-	chomp(@coords);
-	my $foo = [	[split(/:/, $coords[0])],
-			[split(/:/, $coords[1])]];
+	my $foo = [	[$self->pnp->x,	$self->pnp->y,	$self->pnp->z,	$self->pnp->a],
+			[$self->pnp->x,	$self->pnp->y,	$self->pnp->z,	$self->pnp->a]];
     return $foo;
 }
+
+sub feeder {
+    my $self = shift;
+    my $arg = shift;
+	open(FILE_FD, "feeders");
+	my @feeders = <FILE_FD>;
+	close(FILE_FD);
+
+	chomp(@feeders);
+	my @ds;
+	foreach my $feeder (@feeders) {
+		if ($feeder =~ /^#/) {
+			next;
+		}
+		push(@ds, [split(/:/, $feeder)]);
+	}
+	return \@ds;
+}
+
+sub relmove {
+	my $self = shift;
+	my $args = shift;
+
+	my $x = $args->[0];
+	my $y = $args->[1];
+
+	$self->pnp->relMove($x, $y);
+
+
+
+}
+
+
+
 
 
