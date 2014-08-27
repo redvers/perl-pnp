@@ -77,6 +77,17 @@ qx.Class.define("pnp.Application",
 
 	},
 
+	downcrosshair : function(context) {
+		context.beginPath();
+		context.moveTo(0, 130);
+		context.lineTo(320, 130);
+		context.moveTo(165, 0);
+		context.lineTo(165, 240);
+		context.strokeStyle = "#FF0000";
+		context.stroke();
+
+	},
+
 	__setUpCameras : function() {
 		var hbox0 = new qx.ui.layout.HBox();
 		hbox0.setSpacing(4);
@@ -85,10 +96,10 @@ qx.Class.define("pnp.Application",
 		img.src = "http://192.168.1.19:8092/?action=stream";
 	
 		var imgdown = new Image;
-		imgdown.src = "http://192.168.1.19:8091/?action=stream";
+		imgdown.src = "http://192.168.1.19:8090/?action=stream";
 
 		var imgvanity = new Image;
-		imgvanity.src = "http://192.168.1.19:8090/?action=stream";
+		imgvanity.src = "http://192.168.1.19:8091/?action=stream";
 
 		this.__cambox = new qx.ui.container.Composite(hbox0);
 
@@ -118,8 +129,8 @@ qx.Class.define("pnp.Application",
 				x -= (320 / 2);		// Relative 
 				y -= (240 / 2);		// to crosshairs
 
-				x /= 50;
-				y /= 50;
+				x /= 100;
+				y /= -100;
 
 
 				// x and y change due to camera mounting
@@ -145,7 +156,7 @@ qx.Class.define("pnp.Application",
 			this.crosshair(ctx);
 
 			ctxdown.drawImage(imgdown,0,0);
-			this.crosshair(ctxdown);
+			this.downcrosshair(ctxdown);
 
 			ctxvanity.drawImage(imgvanity,0,0);
 			this.crosshair(ctxvanity);
@@ -219,10 +230,14 @@ qx.Class.define("pnp.Application",
 			}
 		};
 
+                var timer = qx.util.TimerManager.getInstance();
 
-		this.__rpc_xyza.callAsync(handler, "xyza", "xyza");
+                timer.start(function(nowt, timerId) {
+			this.__rpc_xyza.callAsync(handler, "xyza", "xyza");
+                },
+                200, this, null, 200);
+        },
 
-	},
 
 	__setUpFeeders : function() {
 		var hbox = new qx.ui.layout.HBox();
