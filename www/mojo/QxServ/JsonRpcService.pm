@@ -35,8 +35,9 @@ sub allow_rpc_access {
 sub xyza {
     my $self = shift;
     my $arg = shift;
+
 	my $foo = [	[$self->pnp->x,	$self->pnp->y,	$self->pnp->z,	$self->pnp->a],
-			[$self->pnp->x,	$self->pnp->y,	$self->pnp->z,	$self->pnp->a]];
+			[$self->pnp->x + $self->pnp->{'pnpconfig'}{'downCameraConfig'}{'Xoffset'},$self->pnp->y + $self->pnp->{'pnpconfig'}{'downCameraConfig'}{'Yoffset'},$self->pnp->z,	$self->pnp->a]];
     return $foo;
 }
 
