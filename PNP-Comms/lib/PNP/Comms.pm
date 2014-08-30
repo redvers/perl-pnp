@@ -84,7 +84,7 @@ sub tick {
 			my $socket = $self->{'socket'};
 			print($socket $wr_line);
 			print($socket "\r\n");
-			$self->stat(5);
+		#	$self->stat(5);
 		}
 
 
@@ -168,7 +168,7 @@ sub relMove {
 
 	push(@{$self->wr_fifo},'{"gc": "G90"}');
 	push(@{$self->wr_fifo}, sprintf('{"gc":"G0 X%f Y%f"}', $xto, $yto));
-	push(@{$self->wr_fifo}, '{"gc":"G4 P1"}');
+	push(@{$self->wr_fifo},'{"gc": "G90"}');
 	push(@{$self->wr_fifo}, sprintf('{"gc":"G0 X%f Y%f"}', $xfin, $yfin));
 }
 
@@ -182,6 +182,18 @@ sub relAMove {
 	push(@{$self->wr_fifo},'{"gc": "G90"}');
 	push(@{$self->wr_fifo}, sprintf('{"gc":"G0 A%f"}', $afin));
 }
+
+sub relZMove {
+	my $self = shift;
+	my $socket = $self->{'socket'};
+	my $z = shift;			
+
+	my $zfin = $self->z + $z;
+
+	push(@{$self->wr_fifo},'{"gc": "G90"}');
+	push(@{$self->wr_fifo}, sprintf('{"gc":"G0 Z%f"}', $zfin));
+}
+
 
 sub absMove {
 	my $self = shift;

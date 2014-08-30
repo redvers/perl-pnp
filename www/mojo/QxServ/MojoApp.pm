@@ -5,17 +5,19 @@ use Mojo::Base 'Mojolicious';
 use QxServ::JsonRpcService;
 use Mojo::IOLoop;
 use PNP::Comms;
+use DBI;
  
 sub startup {
     my $self = shift;
 
 	my $pnp = new PNP::Comms(debug => 1);
+	my $dbi = DBI->connect("DBI:Pg:dbname=pnp", "red", "") || die;
 	$pnp->getCurrentPos();
  
     # load the Mojolicious::Plugin::QooxdooJsonrpc module
     $self->plugin('qooxdoo_jsonrpc', {
         services => {
-             rpc => QxServ::JsonRpcService->new( pnp => $pnp )
+             rpc => QxServ::JsonRpcService->new( pnp => $pnp, dbi => $dbi )
         }
     });
 

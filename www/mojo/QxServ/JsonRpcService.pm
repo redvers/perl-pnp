@@ -4,6 +4,7 @@ use File::Copy;
 use Data::Dumper;
 
 has 'pnp';
+has 'dbi';
 
 # whenever a service method is about to be executed, the dispatcher calls the
 # "allow_rpc_access" method to determine if the incoming request should be satisfied.
@@ -18,6 +19,7 @@ our %allow_access =  (
     g92z68 => 1,
     relmove => 1,
     relamove => 1,
+    relzmove => 1,
     absmove => 1
 );
  
@@ -37,25 +39,28 @@ sub xyza {
     my $arg = shift;
 
 	my $foo = [	[$self->pnp->x,	$self->pnp->y,	$self->pnp->z,	$self->pnp->a],
-			[$self->pnp->x + $self->pnp->{'pnpconfig'}{'downCameraConfig'}{'Xoffset'},$self->pnp->y + $self->pnp->{'pnpconfig'}{'downCameraConfig'}{'Yoffset'},$self->pnp->z,	$self->pnp->a]];
+			[$self->pnp->x + $self->pnp->{'pnpconfig'}{'downCameraConfig'}{'Xoffset'},$self->pnp->y + $self->pnp->{'pnpconfig'}{'downCameraConfig'}{'Yoffset'},$self->pnp->z,	$self->pnp->a], [$self->pnp->vel, $self->pnp->stat]];
     return $foo;
 }
 
 sub feeder {
-    my $self = shift;
-    my $arg = shift;
-	open(FILE_FD, "feeders");
-	my @feeders = <FILE_FD>;
-	close(FILE_FD);
+	my $self = shift;
+	my $arg = shift;
 
-	chomp(@feeders);
+	my $sth = $self->dbi->prepare("select f.id,c.value,c.package,f.x1,f.y1,f.x2,f.y2,f.a1,f.z1,f.count,f.netavail from feeder f LEFT JOIN component c ON (c.id = f.id_component) order by f.id");
+	$sth->execute;
+
 	my @ds;
-	foreach my $feeder (@feeders) {
-		if ($feeder =~ /^#/) {
-			next;
-		}
-		push(@ds, [split(/:/, $feeder)]);
+	while (my @array = $sth->fetchrow_array) {
+		print("Before: ");
+		print(Dumper \@ds);
+		print("After: ");
+		push(@ds, [@array]);
+		print("After: ");
+		print(Dumper \@ds);
 	}
+#	print(Dumper \@ds);
+
 	return \@ds;
 }
 
@@ -90,6 +95,15 @@ sub relamove {
 	my $a = $args->[0];
 
 	$self->pnp->relAMove($a);
+}
+
+sub relzmove {
+	my $self = shift;
+	my $args = shift;
+
+	my $z = $args->[0];
+
+	$self->pnp->relZMove($z);
 }
 
 sub absmove {

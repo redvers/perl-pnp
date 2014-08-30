@@ -6,6 +6,17 @@
 
    Authors:
 
+UI:
+
+| Board Configuration                          |  Feeder configuration             |
+| GerberRef [x1] [y1] CameraRef[x2] [y2] [GoTo]| id_feeder Value Package [x1][y1][x2][y2][a1][z1][count][nextavail] [GoTo NextAvail] [Goto #]
+| CameraRef [x2] [y2] CameraRef[x2] [y2] [GoTo]| etc... all the way down...
+-----------------------------------------------
+| Job Configuration
+| [Examine] | RefDes | Value Package [GoFeeder] [Pick] [Examine] [GoBoard] [Place] [Lock]
+
+
+
 ************************************************************************ */
 
 /**
@@ -49,6 +60,8 @@ qx.Class.define("pnp.Application",
 	__xyz_jogval	: null,
 	__a_jogval	: null,
 
+	cnt		: null,
+	__sel_feeder	: null,
 
 
     /**
@@ -246,25 +259,47 @@ qx.Class.define("pnp.Application",
                 2000, this, null, 2000);
         },
 
-
 	__setUpFeeders : function() {
-		var hbox = new qx.ui.layout.HBox();
-		this.__feederbox = new qx.ui.container.Composite(hbox);
-		hbox.setSpacing(4);
+		var grid = new qx.ui.layout.Grid();
+		this.__feederbox = new qx.ui.container.Composite(grid);
+		grid.setSpacing(4);
+
+//id_feeder Value Package [x1][y1][x2][y2][a1][z1][count][nextavail] [GoTo NextAvail] [Goto #]
 
 		this.__tm3 = new qx.ui.table.model.Simple();
-		this.__tm3.setColumns(["ID", "Package", "Value", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" ]);
+		this.__tm3.setColumns([	"ID",
+					"Value",
+					"Package",
+					"x1",
+					"y1",
+					"x2",
+					"y2",
+					"a1",
+					"z1",
+					"Count",
+					"ptr"]);
 
 		var custom = { tableColumnModel : function(obj) { return new qx.ui.table.columnmodel.Resize(obj); } };
-                var t3 = new qx.ui.table.Table(this.__tm3, custom);
-		t3.set({ width: 968 });
-                var tcm = t3.getTableColumnModel();
-                var resizeBehavior = tcm.getBehavior();
-                resizeBehavior.setWidth(0, "3%");
-                resizeBehavior.setWidth(1, "8%");
-                resizeBehavior.setWidth(2, "8%");
+		var table = new qx.ui.table.Table(this.__tm3, custom);
+		var tcm = table.getTableColumnModel();
 
-		this.__feederbox.add(t3);
+		tcm.getBehavior().setWidth(0,30);
+		tcm.getBehavior().setWidth(1,150);
+		tcm.getBehavior().setWidth(2,150);
+		tcm.getBehavior().setWidth(3,60);
+		tcm.getBehavior().setWidth(4,60);
+		tcm.getBehavior().setWidth(5,60);
+		tcm.getBehavior().setWidth(6,60);
+		tcm.getBehavior().setWidth(7,60);
+		tcm.getBehavior().setWidth(8,60);
+		this.__feederbox.add(table, {row:0, column: 0, rowSpan: 15});
+
+		table.set({
+			width: 800,
+			height: 400,
+			decorator : null
+		});
+
 
 		this.__rpc_feeder = new qx.io.remote.Rpc(
 			"http://localhost:3000/jsonrpc/",
@@ -273,18 +308,83 @@ qx.Class.define("pnp.Application",
 
 		var that = this;
 		var handler = function(result, exc) {
+			var empty = [];
+			for (cnt = 0 ; cnt < result.length ; cnt++) {
+				empty.push(["","","","","","","","","","","",""]);
+			};
+
+			console.log(empty);
+
+			that.__tm3.setData(empty);
 			if (exc == null) {
-				that.__tm3.setData(result);
-//				that.__tm3.setValue(2, 1, result[0][1]);
-//				that.__tm3.setValue(3, 1, result[0][2]);
-//				that.__tm3.setValue(4, 1, result[0][3]);
+				result.forEach(function(item, i) {
+					console.log(item);
+					that.__tm3.setValue( 0, i, item[0] + "" );
+					that.__tm3.setValue( 1, i, item[1] + "" );
+					that.__tm3.setValue( 2, i, item[2] + "" );
+					that.__tm3.setValue( 3, i, item[3] + "" );
+					that.__tm3.setValue( 4, i, item[4] + "" );
+					that.__tm3.setValue( 5, i, item[5] + "" );
+					that.__tm3.setValue( 6, i, item[6] + "" );
+					that.__tm3.setValue( 7, i, item[7] + "" );
+					that.__tm3.setValue( 8, i, item[8] + "" );
+					that.__tm3.setValue( 9, i, item[9] + "" );
+					that.__tm3.setValue( 10, i, item[10] + "" );
+				});
 			} else {
 				alert("Exception during async call: " + exc);
 			}
-		};
-
+		}
 
 		this.__rpc_feeder.callAsync(handler, "feeder", "feeder");
+
+		var mfirst = new qx.ui.form.Button("CamFirst");
+		mfirst.addListener("execute", function(e) {
+			that.__sel_feeder = 1;	// I don't have that signal yet homey
+			var x = that.__tm3.getValue(3, that.__sel_feeder);
+			var y = that.__tm3.getValue(4, that.__sel_feeder);
+			that.__rpc_relxyza.callAsync(function() {}, "absmove", [x, y]);
+		}, this);
+		this.__feederbox.add(mfirst, {row:0, column: 1});
+
+		var mlast = new qx.ui.form.Button("CamLast");
+		mlast.addListener("execute", function(e) {
+			that.__sel_feeder = 1;	// I don't have that signal yet homey
+			var x = that.__tm3.getValue(5, that.__sel_feeder);
+			var y = that.__tm3.getValue(6, that.__sel_feeder);
+			that.__rpc_relxyza.callAsync(function() {}, "absmove", [x, y]);
+		}, this);
+		this.__feederbox.add(mlast, {row:0, column: 2});
+
+		var mnext = new qx.ui.form.Button("CamNext");
+		mnext.addListener("execute", function(e) {
+			that.__sel_feeder = 1;	// I don't have that signal yet homey
+
+			var x1= that.__tm3.getValue(3, that.__sel_feeder);
+			var y1= that.__tm3.getValue(4, that.__sel_feeder);
+			var x2= that.__tm3.getValue(5, that.__sel_feeder);
+			var y2= that.__tm3.getValue(6, that.__sel_feeder);
+			var cnt = that.__tm3.getValue(9, that.__sel_feeder);
+			var next = 2;
+
+			var xdelta = (x2 - x1) / (cnt - 1);
+			var ydelta = (y2 - y1) / (cnt - 1);
+
+			var x = (x1/1) + (xdelta * next);
+			var y = (y1/1) + (ydelta * next);
+			console.log("x1: " + x1 + ", y1: " + y1);
+			console.log("x2: " + x2 + ", y2: " + y2);
+			console.log("xdelta: " + xdelta + ", ydelta: " + ydelta);
+			console.log("x: " + x + ", y: " + y);
+			that.__rpc_relxyza.callAsync(function() {}, "absmove", [x, y]);
+		}, this);
+		this.__feederbox.add(mnext, {row:0, column: 3});
+
+
+
+
+
+
 	},
 
 	__setUpNav : function() {
@@ -333,7 +433,15 @@ qx.Class.define("pnp.Application",
 		}, this);
 
 		var g0zup = new qx.ui.form.Button("^Z^");
+		g0zup.addListener("execute", function(e) {
+			this.__rpc_relxyza.callAsync(handler, "relzmove", [this.__xyz_jogval]);
+		}, this);
+
 		var g0zdn = new qx.ui.form.Button("vZv");
+		g0zdn.addListener("execute", function(e) {
+			this.__rpc_relxyza.callAsync(handler, "relzmove", [0 - this.__xyz_jogval]);
+		}, this);
+
 
 		var g0aup = new qx.ui.form.Button("^A>");
 		g0aup.addListener("execute", function(e) {
@@ -425,7 +533,6 @@ qx.Class.define("pnp.Application",
 		this.__setUpCameras();
 		this.__setUpStatus();
 		this.__setUpFeeders();
-//		this.__setUpNav();
 		this.__mainvbox0.add(this.__cambox);
 		this.__mainvbox0.add(this.__feederbox);
 
